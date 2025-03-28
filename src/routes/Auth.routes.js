@@ -7,3 +7,4 @@ export const AuthRoutes = Router();
 AuthRoutes.post("/register", AuthController.registerUsers);
 AuthRoutes.post("/login", AuthController.loginUser);
 AuthRoutes.get("/protected", authoticate, AuthController.protectedRoute);
+AuthRoutes.post("/posts", authenticate, PostController.createPost);
