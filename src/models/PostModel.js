@@ -1,28 +1,46 @@
-import pool from "../db/db";
+import pool from "../db/db.js";
 
 export class PostModel {
   static async getAll() {
     try {
       const query = `SELECT * FROM post_tb`;
       const result = await pool.query(query);
-      return result.rows; 
+      return result.rows;
     } catch (error) {
       console.error("Error al obtener los posts:", error);
       throw new Error("Error al obtener los posts");
     }
   }
 
-  static async createPost(text, img_url, user_id) {
+  static async getUserById(user_id) {
     try {
-      const query =
-        'INSERT INTO post_tb (text, img_url, "createAt", user_id) VALUES ($1, $2, current_timestamp, $3) RETURNING *';
-      const values = [text, img_url, user_id];
+      const query = `SELECT name FROM users_tb WHERE id = $1;`;
+      const result = await pool.query(query, [user_id]);
 
-      const { rows } = await pool.query(query, values);
-      return rows[0]; // Retornamos el primer post insertado
+      if (result.rows.length === 0) {
+        return null;
+      }
+
+      return result.rows[0];
     } catch (error) {
-      console.error("Error al crear el post:", error);
-      throw new Error("Error al crear el post");
+      console.error("Error al obtener el usuario:", error);
+      throw new Error("Error al obtener el usuario: " + error.message);
+    }
+  }
+
+  static async createPost(text, img_url, createAt, userId) {
+    try {
+      const query = `
+        INSERT INTO post_tb (text, img_url, "createAt", user_id)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *;
+      `;
+
+      const values = [text, img_url, createAt, userId]; 
+      const { rows } = await pool.query(query, values);
+      return rows[0];
+    } catch (error) {
+      throw new Error("Error al crear el post: " + error.message);
     }
   }
 
@@ -38,14 +56,14 @@ export class PostModel {
         throw new Error("No se encontró el post con el ID proporcionado.");
       }
 
-      return rows[0]; 
+      return rows[0];
     } catch (error) {
       console.error("Error al eliminar el post:", error);
       throw new Error("Error al eliminar el post");
     }
   }
 
-  // Actualizar un post
+
   static async updatePost(post_id, text, img_url, user_id) {
     try {
       const query = `UPDATE post_tb
@@ -61,7 +79,7 @@ export class PostModel {
         throw new Error("No se encontró el post con el ID proporcionado.");
       }
 
-      return rows[0]; 
+      return rows[0];
     } catch (error) {
       console.error("Error al actualizar el post:", error);
       throw new Error("Error al actualizar el post");

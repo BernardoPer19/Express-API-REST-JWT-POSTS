@@ -11,7 +11,7 @@ class AuthModel {
 
     const token = jwt.sign(
       {
-        id: user.id,
+        id: user.user_id,
         name: user.name,
         email: user.email,
         phone: user.phone,
@@ -75,10 +75,10 @@ class AuthModel {
       const result = await pool.query(query, [email]);
 
       if (result.rows.length === 0) {
-        return { success: false, message: "Usuario no encontrado" };
+        return null;
       }
 
-      return { success: true, user: result.rows[0] };
+      return result.rows[0];
     } catch (error) {
       throw new Error("Error verifying email: " + error.message);
     }

@@ -32,7 +32,7 @@ export class AuthController {
     } catch (error) {
       console.error(error);
       return res.status(500).json({
-        message: error,
+        message: error.message,
       });
     }
   }
@@ -40,33 +40,29 @@ export class AuthController {
   static async loginUser(req, res) {
     try {
       const { email, password } = req.body;
-
-
-      const userResult = await AuthModel.verifyByEmail(email);
-      if (!userResult.success) {
+  
+      const user = await AuthModel.verifyByEmail(email);
+  
+      if (!user) {
         return res
           .status(401)
           .json({ message: "El correo NO está registrado" });
       }
-      const user = userResult.user;
-
-      const isValidPassword =  AuthModel.comparePasswords(
-        password,
-        user.password
-      );
-
+  
+      const isValidPassword =  AuthModel.comparePasswords(password, user.password);
+  
       if (!isValidPassword) {
         return res.status(401).json({ message: "La contraseña es incorrecta" });
       }
-
+  
       const token = await AuthModel.createToken(user);
-
+  
       const options = {
         httpOnly: true,
         sameSite: "Strict",
         maxAge: 1000 * 60 * 60,
       };
-
+  
       res
         .cookie("access_token", token, options)
         .status(200)
@@ -77,7 +73,7 @@ export class AuthController {
         .json({ message: "Error en el login", error: error.message });
     }
   }
-
+  
   static protectedRoute = (req, res) => {
     try {
       if (!req.user) {
@@ -90,6 +86,18 @@ export class AuthController {
       return res
         .status(500)
         .json({ message: "Error en la solicitud", error: error.message });
+    }
+  };
+
+  static logout = (req, res) => {
+    try {
+      res.clearCookie("access_token", { httpOnly: true, sameSite: "Strict" });
+
+      return res.status(200).json({ message: "Logout exitoso" });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: "Error al cerrar sesión", error: error.message });
     }
   };
 }

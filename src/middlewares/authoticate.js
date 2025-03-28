@@ -10,10 +10,9 @@ export const authoticate = (req, res, next) => {
         .json({ message: "No autorizado. No se encontró el token." });
     }
 
-    const verify = jwt.verify(token, JWT_PASSWORD);
-
-    req.user = verify;
-
+    const decoded = jwt.verify(token, JWT_PASSWORD);
+    console.log("Decoded JWT:", decoded); 
+    req.user = decoded;
     next();
   } catch(error) {
     return res
