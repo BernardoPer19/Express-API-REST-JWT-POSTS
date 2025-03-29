@@ -39,17 +39,6 @@ export class PostModel {
     }
   }
 
-  static async getPostById(postId) {
-    try {
-      const query = `SELECT * FROM post_tb WHERE post_id = $1`;
-      const result = await pool.query(query, [postId]);
-      return result.rows[0];
-    } catch (error) {
-      console.error("Error al obtener el post:", error);
-      throw new Error("Error al obtener el post");
-    }
-  }
-
   static async deletePost(postId, userId) {
     try {
       const query = `
